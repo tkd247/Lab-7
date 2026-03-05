@@ -15,7 +15,11 @@ using a machine learning regression model.""")
 # Load Data
 import zipfile
 with zipfile.ZipFile("AssessorExportCSV.zip") as z:
-    df = pd.read_csv(z.open("AssessorExportCSV.csv"))
+    
+    # find the CSV file inside the zip automatically
+    filename = [f for f in z.namelist() if f.endswith(".csv")][0]
+    
+    df = pd.read_csv(z.open(filename))
 
 # Data Cleaning
 df = df[df["APPRAISED_VALUE"].notna()]
