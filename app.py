@@ -1,3 +1,4 @@
+```python
 # Hamilton County Property Value Predictor
 # Educational demonstration only
 
@@ -5,33 +6,33 @@ import streamlit as st
 import pandas as pd
 import zipfile
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
-
-# -------------------------
+# -----------------------------
 # App Title
-# -------------------------
+# -----------------------------
 
 st.title("Hamilton County Property Value Predictor")
 
 st.write("""
-This application predicts **APPRAISED_VALUE** for properties in
-Hamilton County, Tennessee using a machine learning regression model.
-Educational use only.
+This application predicts **APPRAISED_VALUE** for properties in Hamilton County,
+Tennessee using a machine learning regression model.
+
+**Disclaimer:** Educational use only.
 """)
 
-
-# -------------------------
+# -----------------------------
 # Load Dataset
-# -------------------------
+# -----------------------------
 
 @st.cache_data
 def load_data():
 
     with zipfile.ZipFile("AssessorExportCSV.zip") as z:
 
+        # automatically detect csv file inside zip
         filename = [f for f in z.namelist() if f.endswith(".csv")][0]
 
         df = pd.read_csv(z.open(filename), low_memory=False)
@@ -43,10 +44,9 @@ df = load_data()
 
 st.write("Dataset Shape:", df.shape)
 
-
-# -------------------------
+# -----------------------------
 # Convert Numeric Columns
-# -------------------------
+# -----------------------------
 
 numeric_cols = [
     "APPRAISED_VALUE",
@@ -57,31 +57,34 @@ numeric_cols = [
 ]
 
 for col in numeric_cols:
+
     if col in df.columns:
+
         df[col] = (
             df[col]
             .astype(str)
+            .str.replace("$", "", regex=False)
             .str.replace(",", "", regex=False)
+            .str.strip()
         )
+
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-
-# -------------------------
+# -----------------------------
 # Data Cleaning
-# -------------------------
+# -----------------------------
 
-df = df[df["APPRAISED_VALUE"].notna()]
-df = df[df["APPRAISED_VALUE"] > 0]
+df = df.dropna(subset=["APPRAISED_VALUE"])
+df = df[df["APPRAISED_VALUE"] > 1000]
 
 df["LAND_VALUE"] = df["LAND_VALUE"].fillna(0)
 df["BUILD_VALUE"] = df["BUILD_VALUE"].fillna(0)
 df["YARDITEMS_VALUE"] = df["YARDITEMS_VALUE"].fillna(0)
 df["CALC_ACRES"] = df["CALC_ACRES"].fillna(0)
 
-
-# -------------------------
+# -----------------------------
 # Feature Selection
-# -------------------------
+# -----------------------------
 
 features = [
     "LAND_VALUE",
@@ -93,19 +96,17 @@ features = [
 X = df[features]
 y = df["APPRAISED_VALUE"]
 
-
-# -------------------------
+# -----------------------------
 # Train/Test Split
-# -------------------------
+# -----------------------------
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-
-# -------------------------
+# -----------------------------
 # Train Model
-# -------------------------
+# -----------------------------
 
 model = RandomForestRegressor(
     n_estimators=100,
@@ -114,10 +115,9 @@ model = RandomForestRegressor(
 
 model.fit(X_train, y_train)
 
-
-# -------------------------
+# -----------------------------
 # Model Evaluation
-# -------------------------
+# -----------------------------
 
 y_pred = model.predict(X_test)
 
@@ -129,10 +129,9 @@ st.subheader("Model Performance")
 st.write(f"Mean Absolute Error (MAE): **${mae:,.2f}**")
 st.write(f"R² Score: **{r2:.3f}**")
 
-
-# -------------------------
-# Property Value Graph
-# -------------------------
+# -----------------------------
+# Graph: Property Value Distribution
+# -----------------------------
 
 st.subheader("Distribution of Property Values")
 
@@ -146,10 +145,9 @@ ax.set_title("Hamilton County Property Value Distribution")
 
 st.pyplot(fig)
 
-
-# -------------------------
-# User Input Section
-# -------------------------
+# -----------------------------
+# User Inputs
+# -----------------------------
 
 st.header("Enter Property Information")
 
@@ -181,6 +179,9 @@ acres = st.number_input(
     step=0.01
 )
 
+# -----------------------------
+# Create Input DataFrame
+# -----------------------------
 
 input_data = pd.DataFrame(
     [[land_value, build_value, yard_value, acres]],
@@ -188,16 +189,15 @@ input_data = pd.DataFrame(
 )
 
 st.subheader("User Input Data")
-
 st.write(input_data)
 
-
-# -------------------------
+# -----------------------------
 # Prediction
-# -------------------------
+# -----------------------------
 
 if st.button("Predict Appraised Value"):
 
     prediction = model.predict(input_data)[0]
 
     st.success(f"Estimated Appraised Value: **${prediction:,.2f}**")
+```
