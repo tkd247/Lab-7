@@ -1,4 +1,3 @@
-```python
 # Hamilton County Property Value Predictor
 # Educational demonstration only
 
