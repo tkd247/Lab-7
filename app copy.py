@@ -13,7 +13,9 @@ using a machine learning regression model.""")
 
 
 # Load Data
-df = pd.read_excel("Housing_Hamilton_County.xlsx")
+import zipfile
+with zipfile.ZipFile("AssessorExportCSV.zip") as z:
+    df = pd.read_csv(z.open("AssessorExportCSV.csv"))
 
 # Data Cleaning
 df = df[df["APPRAISED_VALUE"].notna()]
