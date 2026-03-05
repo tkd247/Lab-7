@@ -38,9 +38,6 @@ def load_data():
 df = load_data()
 
 
-# Data Cleaning
-
-
 # Convert numeric columns safely
 df["APPRAISED_VALUE"] = pd.to_numeric(df["APPRAISED_VALUE"], errors="coerce")
 
@@ -50,24 +47,14 @@ for col in numeric_cols:
     if col in df.columns:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-# Remove invalid target values
+# Remove invalid values
 df = df[df["APPRAISED_VALUE"].notna()]
 df = df[df["APPRAISED_VALUE"] > 0]
-
-# Filter residential properties (flexible matching)
-if "PROPERTY_TYPE_CODE_DESC" in df.columns:
-    df = df[df["PROPERTY_TYPE_CODE_DESC"].astype(str)
-            .str.contains("Residential", case=False, na=False)]
 
 # Select features
 features = ["LAND_VALUE", "BUILD_VALUE", "YARDITEMS_VALUE", "CALC_ACRES"]
 
 df = df[features + ["APPRAISED_VALUE"]].dropna()
-
-# Safety check
-if df.shape[0] < 10:
-    st.error("Dataset became empty after cleaning. Check filters or dataset format.")
-    st.stop()
 
 
 # Prepare Model Data
